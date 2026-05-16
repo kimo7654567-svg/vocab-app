@@ -141,3 +141,36 @@ input[type="text"]:focus,select:focus{border-color:var(--primary-mid);box-shadow
 /* TOAST */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;opacity:0;transition:opacity 0.3s;z-index:999;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
+
+/* ── NEW: READ MODE TOGGLE ── */
+.read-mode-toggle{display:flex;gap:8px;margin-bottom:8px}
+.read-mode-toggle .btn{width:auto;margin:0}
+
+/* ── NEW: SENTENCE HIGHLIGHT ── */
+.story-sentence{cursor:pointer;border-radius:6px;padding:3px 6px;transition:background 0.2s;display:inline}
+.story-sentence:hover{background:var(--gray-light)}
+.story-sentence.highlight{background:#FAC775;color:#412402;border-radius:6px}
+
+/* ── NEW: WORD CARDS ── */
+.word-cards-area{display:flex;gap:8px;overflow-x:auto;padding:0 0 8px;margin-bottom:10px;-webkit-overflow-scrolling:touch}
+.word-cards-area::-webkit-scrollbar{height:4px}
+.word-cards-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.word-card{flex-shrink:0;background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;text-align:center;cursor:pointer;transition:background 0.15s;min-width:80px}
+.word-card:hover{background:var(--primary-light)}
+.word-card-en{font-size:16px;font-weight:500;color:var(--primary)}
+.word-card-zh{font-size:12px;color:var(--text-muted);margin:2px 0}
+.word-card-icon{font-size:14px}
+
+/* ── NEW: TRANSLATION AREA ── */
+.translation-area{margin-bottom:1rem}
+.translation-toggle{width:100%;background:var(--gray-light);border:none;border-radius:var(--radius-sm);padding:10px;font-size:14px;color:var(--text-muted);cursor:pointer;text-align:center;transition:background 0.15s}
+.translation-toggle:hover{background:var(--border)}
+.translation-text{background:var(--bg-secondary);border-radius:var(--radius-sm);padding:14px;font-size:15px;line-height:1.8;color:var(--text);margin-top:6px}
+
+/* ── NEW: BONUS WORDS ── */
+.bonus-word-row{padding:10px 0;border-bottom:0.5px solid var(--border)}
+.bonus-word-row:last-child{border-bottom:none}
+.bonus-check{display:flex;align-items:center;gap:10px;cursor:pointer;width:100%}
+.bonus-check input[type="checkbox"]{width:20px;height:20px;accent-color:var(--primary);flex-shrink:0}
+.bonus-en{font-size:16px;font-weight:500;flex:1}
+.bonus-zh{font-size:13px;color:var(--text-muted)}
