@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VocabApp</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #534AB7;
+    --primary-light: #EEEDFE;
+    --primary-mid: #7F77DD;
+    --success: #1D9E75;
+    --success-light: #E1F5EE;
+    --danger: #D85A30;
+    --danger-light: #FAECE7;
+    --warning: #BA7517;
+    --warning-light: #FAEEDA;
+    --gray: #888780;
+    --gray-light: #F1EFE8;
+    --text: #2C2C2A;
+    --text-muted: #5F5E5A;
+    --border: rgba(0,0,0,0.12);
+    --bg: #ffffff;
+    --bg-secondary: #F8F7F4;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg-secondary);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ===== TOP BAR ===== */
+  .topbar {
+    background: var(--bg);
+    border-bottom: 0.5px solid var(--border);
+    padding: 0 1.25rem;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .topbar-title { font-size: 17px; font-weight: 500; }
+  .topbar-back {
+    background: none;
+    border: none;
+    font-size: 15px;
+    color: var(--primary);
+    cursor: pointer;
+    padding: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* ===== CONTAINERS ===== */
+  .container { max-width: 480px; margin: 0 auto; padding: 1.25rem; }
+
+  /* ===== CARDS ===== */
+  .card {
+    background: var(--bg);
+    border-radius: var(--radius);
+    border: 0.5px solid var(--border);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    border: 0.5px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.15s;
+    width: 100%;
+    margin-bottom: 8px;
+  }
+  .btn:hover { background: var(--bg-secondary); }
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+  .btn-primary:hover { background: #443fa0; }
+  .btn-success {
+    background: var(--success);
+    color: #fff;
+    border-color: var(--success);
+  }
+  .btn-sm {
+    padding: 6px 14px;
+    font-size: 13px;
+    width: auto;
+    margin-bottom: 0;
+  }
+
+  /* ===== INPUTS ===== */
+  input[type="text"], select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    background: var(--bg);
+    color: var(--text);
+    margin-bottom: 10px;
+    outline: none;
+  }
+  input[type="text"]:focus, select:focus {
+    border-color: var(--primary-mid);
+    box-shadow: 0 0 0 3px var(--primary-light);
+  }
+
+  /* ===== STUDENT AVATAR ===== */
+  .avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--primary-light);
+    color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  /* ===== STUDENT LIST ===== */
+  .student-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 0.5px solid var(--border);
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .student-item:last-child { border-bottom: none; }
+  .student-item:hover { opacity: 0.75; }
+  .student-info { flex: 1; }
+  .student-name { font-size: 16px; font-weight: 500; }
+  .student-level { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ===== WORD CHIP ===== */
+  .word-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 13px;
+    margin: 4px;
+  }
+  .word-chip.struggling { background: var(--warning-light); color: var(--warning); }
+  .word-chip.mastered { background: var(--success-light); color: var(--success); }
+
+  /* ===== THEME GRID ===== */
+  .theme-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+  .theme-btn {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 8px;
+    font-size: 13px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .theme-btn:hover { background: var(--primary-light); border-color: var(--primary-mid); }
+  .theme-btn.selected { background: var(--primary-light); border-color: var(--primary); color: var(--primary); font-weight: 500; }
+  .theme-emoji { font-size: 24px; display: block; margin-bottom: 4px; }
+
+  /* ===== STORY READER ===== */
+  .story-text {
+    font-size: 22px;
+    line-height: 1.8;
+    letter-spacing: 0.02em;
+  }
+  .story-word {
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 2px 4px;
+    transition: background 0.15s;
+    display: inline-block;
+  }
+  .story-word:hover { background: var(--gray-light); }
+  .story-word.highlight { background: #FAC775; color: #412402; }
+  .story-word.hunt-target { background: var(--primary-light); color: var(--primary); }
+  .story-word.hunt-correct { background: var(--success-light); color: var(--success); }
+  .story-word.hunt-wrong { background: var(--danger-light); color: var(--danger); }
+  .story-word.phonics-active { background: var(--warning-light); color: var(--warning); }
+
+  /* ===== TIER BADGE ===== */
+  .tier-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+
+  /* ===== STEP INDICATOR ===== */
+  .steps {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 1.25rem;
+  }
+  .step-dot {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--gray-light);
+    transition: background 0.3s;
+  }
+  .step-dot.active { background: var(--primary); }
+  .step-dot.done { background: var(--primary-mid); }
+
+  /* ===== HUNT QUESTION ===== */
+  .hunt-box {
+    background: var(--primary-light);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    margin-bottom: 1rem;
+    font-size: 16px;
+    color: var(--primary);
+  }
+
+  /* ===== PHONICS ===== */
+  .phonics-box {
+    background: var(--warning-light);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    margin-bottom: 1rem;
+    font-size: 16px;
+    color: var(--warning);
+    text-align: center;
+    display: none;
+  }
+
+  /* ===== SELF EVAL ===== */
+  .eval-word-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: 0.5px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    cursor: pointer;
+    margin: 4px;
+    transition: all 0.15s;
+  }
+  .eval-word-btn.selected {
+    background: var(--warning-light);
+    border-color: var(--warning);
+    color: var(--warning);
+  }
+
+  .difficulty-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+  .difficulty-btn {
+    padding: 14px;
+    border-radius: var(--radius-sm);
+    border: 0.5px solid var(--border);
+    background: var(--bg);
+    font-size: 14px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .difficulty-btn:hover { background: var(--bg-secondary); }
+  .difficulty-btn.selected { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+
+  /* ===== PROGRESS BAR ===== */
+  .progress-bar-wrap {
+    background: var(--gray-light);
+    border-radius: 4px;
+    height: 6px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+
+  /* ===== TOAST ===== */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 999;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+
+  /* ===== LOADING ===== */
+  .loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(255,255,255,0.85);
+    z-index: 500;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .loading-overlay.show { display: flex; }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--primary-light);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .section-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+
+  .word-translate-preview {
+    background: var(--success-light);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .word-translate-preview.show { display: flex; }
+  .translate-text { font-size: 18px; font-weight: 500; color: var(--success); }
+
+  hr { border: none; border-top: 0.5px solid var(--border); margin: 1rem 0; }
+</style>
+</head>
+<body>
+
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div id="loadingMsg" style="font-size:14px;color:var(--text-muted);">載入中...</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ========== SCREEN 1: 選擇學生 ========== -->
+<div class="screen active" id="screenStudents">
+  <div class="topbar">
+    <span class="topbar-title">VocabApp</span>
+  </div>
+  <div class="container">
+    <div class="card" id="studentList">
+      <div class="section-label">選擇學生</div>
+      <div id="studentListInner">
+        <div style="color:var(--text-muted);font-size:14px;padding:1rem 0;">載入中...</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="showAddStudent()">+ 新增學生</button>
+
+    <!-- 新增學生表單 -->
+    <div class="card" id="addStudentForm" style="display:none;">
+      <div class="section-label" style="margin-bottom:12px;">新增學生</div>
+      <input type="text" id="newStudentName" placeholder="學生姓名（例如：小明）">
+      <div class="section-label">程度</div>
+      <div class="difficulty-grid">
+        <button class="difficulty-btn selected" data-level="beginner" onclick="selectLevel(this)">🌱 初學<br><span style="font-size:11px;color:var(--text-muted);">每句最多5字</span></button>
+        <button class="difficulty-btn" data-level="intermediate" onclick="selectLevel(this)">🌿 進階<br><span style="font-size:11px;color:var(--text-muted);">每句最多8字</span></button>
+        <button class="difficulty-btn" data-level="advanced" onclick="selectLevel(this)">🌳 流利<br><span style="font-size:11px;color:var(--text-muted);">正常句子</span></button>
+      </div>
+      <button class="btn btn-primary" onclick="addStudent()">建立學生</button>
+      <button class="btn" onclick="hideAddStudent()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCREEN 2: 主選單 ========== -->
+<div class="screen" id="screenHome">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screenStudents')">← 返回</button>
+    <span class="topbar-title" id="homeStudentName">主選單</span>
+    <div style="width:60px;"></div>
+  </div>
+  <div class="container">
+    <div class="card" style="display:flex;align-items:center;gap:14px;margin-bottom:1.25rem;">
+      <div class="avatar" id="homeAvatar">?</div>
+      <div>
+        <div style="font-size:16px;font-weight:500;" id="homeNameDisplay">—</div>
+        <div style="font-size:13px;color:var(--text-muted);" id="homeLevelDisplay">—</div>
+      </div>
+    </div>
+
+    <div style="display:grid;gap:10px;margin-bottom:1rem;">
+      <button class="btn btn-primary" style="padding:16px;" onclick="goTo('screenWords')">📚 單字庫管理</button>
+      <button class="btn btn-success" style="padding:16px;" onclick="startPracticeFlow()">▶ 開始練習</button>
+    </div>
+
+    <div class="card" id="statsCard">
+      <div class="section-label">學習狀態</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+        <div style="background:var(--success-light);border-radius:var(--radius-sm);padding:12px;text-align:center;">
+          <div style="font-size:24px;font-weight:500;color:var(--success);" id="statMastered">0</div>
+          <div style="font-size:12px;color:var(--success);">已掌握</div>
+        </div>
+        <div style="background:var(--warning-light);border-radius:var(--radius-sm);padding:12px;text-align:center;">
+          <div style="font-size:24px;font-weight:500;color:var(--warning);" id="statStruggling">0</div>
+          <div style="font-size:12px;color:var(--warning);">練習中</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;background:var(--primary-light);border-radius:var(--radius-sm);padding:12px;text-align:center;">
+        <div style="font-size:24px;font-weight:500;color:var(--primary);" id="statTotal">0</div>
+        <div style="font-size:12px;color:var(--primary);">單字庫總數</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCREEN 3: 單字庫 ========== -->
+<div class="screen" id="screenWords">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screenHome')">← 返回</button>
+    <span class="topbar-title">單字庫</span>
+    <div style="width:60px;"></div>
+  </div>
+  <div class="container">
+    <!-- 新增單字 -->
+    <div class="card">
+      <div class="section-label" style="margin-bottom:10px;">新增單字</div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="wordInput" placeholder="輸入英文單字" style="margin:0;flex:1;" oninput="onWordInput(this.value)" onkeydown="if(event.key==='Enter')translateWord()">
+        <button class="btn btn-sm btn-primary" onclick="translateWord()">翻譯</button>
+      </div>
+      <div class="word-translate-preview" id="translatePreview">
+        <div>
+          <div class="translate-text" id="translateChinese">—</div>
+          <div style="font-size:12px;color:var(--text-muted);" id="translateDifficulty">—</div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-sm" onclick="speakWord()" title="發音">🔊</button>
+          <button class="btn btn-sm btn-success" onclick="addWordConfirm()">加入</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 單字列表 -->
+    <div class="card">
+      <div class="section-label" style="margin-bottom:10px;">我的單字 <span id="wordCount" style="font-weight:400;color:var(--text-muted);"></span></div>
+      <div id="wordListInner">
+        <div style="color:var(--text-muted);font-size:14px;">還沒有單字，快來新增吧！</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCREEN 4: 選擇主題 ========== -->
+<div class="screen" id="screenTheme">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screenHome')">← 返回</button>
+    <span class="topbar-title">選擇故事主題</span>
+    <div style="width:60px;"></div>
+  </div>
+  <div class="container">
+    <div class="card">
+      <div style="font-size:14px;color:var(--text-muted);margin-bottom:1rem;">今天想讀什麼主題的故事？</div>
+      <div class="theme-grid">
+        <button class="theme-btn" onclick="selectTheme(this,'animals')"><span class="theme-emoji">🦁</span>動物</button>
+        <button class="theme-btn" onclick="selectTheme(this,'travel')"><span class="theme-emoji">✈️</span>旅行</button>
+        <button class="theme-btn" onclick="selectTheme(this,'horror')"><span class="theme-emoji">👻</span>恐怖</button>
+        <button class="theme-btn" onclick="selectTheme(this,'food')"><span class="theme-emoji">🍕</span>食物</button>
+        <button class="theme-btn" onclick="selectTheme(this,'ocean')"><span class="theme-emoji">🌊</span>海洋</button>
+        <button class="theme-btn" onclick="selectTheme(this,'daily')"><span class="theme-emoji">🏠</span>日常</button>
+        <button class="theme-btn" onclick="selectTheme(this,'space')"><span class="theme-emoji">🚀</span>太空</button>
+        <button class="theme-btn" onclick="selectTheme(this,'magic')"><span class="theme-emoji">🪄</span>魔法</button>
+        <button class="theme-btn" onclick="selectTheme(this,'random')"><span class="theme-emoji">🎲</span>隨機</button>
+      </div>
+      <button class="btn btn-primary" id="startStoryBtn" onclick="generateStory()" disabled style="opacity:0.5;">生成故事</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCREEN 5: 練習 ========== -->
+<div class="screen" id="screenPractice">
+  <div class="topbar">
+    <button class="topbar-back" onclick="confirmExitPractice()">✕ 離開</button>
+    <span class="topbar-title" id="practiceTitle">練習</span>
+    <div style="width:60px;"></div>
+  </div>
+  <div class="container">
+    <!-- 進度 -->
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="practiceProgress" style="width:0%"></div>
+    </div>
+
+    <!-- Tier badge -->
+    <div class="tier-badge" id="tierBadge">第 1 層</div>
+
+    <!-- Step dots -->
+    <div class="steps">
+      <div class="step-dot active" id="dot0"></div>
+      <div class="step-dot" id="dot1"></div>
+      <div class="step-dot" id="dot2"></div>
+    </div>
+
+    <!-- Step label -->
+    <div class="section-label" id="stepLabel" style="margin-bottom:8px;">步驟 1：指著聽</div>
+
+    <!-- Story card -->
+    <div class="card">
+      <div class="story-text" id="storyDisplay"></div>
+    </div>
+
+    <!-- Hunt box -->
+    <div class="hunt-box" id="huntBox" style="display:none;"></div>
+
+    <!-- Phonics box -->
+    <div class="phonics-box" id="phonicsBox"></div>
+
+    <!-- Action buttons -->
+    <div id="actionArea"></div>
+  </div>
+</div>
+
+<!-- ========== SCREEN 6: 自評 ========== -->
+<div class="screen" id="screenEval">
+  <div class="topbar">
+    <span class="topbar-title">今日練習回顧</span>
+  </div>
+  <div class="container">
+    <div class="card">
+      <div class="section-label" style="margin-bottom:12px;">這次故事你覺得...</div>
+      <div class="difficulty-grid" id="evalDifficultyGrid">
+        <button class="difficulty-btn" data-rating="easy" onclick="selectEvalDifficulty(this)">😴 太簡單</button>
+        <button class="difficulty-btn" data-rating="good" onclick="selectEvalDifficulty(this)">😊 剛剛好</button>
+        <button class="difficulty-btn" data-rating="hard" onclick="selectEvalDifficulty(this)">😅 有點難</button>
+        <button class="difficulty-btn" data-rating="veryhard" onclick="selectEvalDifficulty(this)">😭 好難喔</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-label" style="margin-bottom:12px;">點出你不確定的字</div>
+      <div id="evalWordBtns" style="margin-bottom:12px;"></div>
+      <button class="btn btn-sm" onclick="clearEvalWords()" style="width:auto;">全部都會！</button>
+    </div>
+
+    <button class="btn btn-primary" onclick="submitEval()">完成練習</button>
+  </div>
+</div>
+
+<!-- ========== SCREEN 7: 完成 ========== -->
+<div class="screen" id="screenDone">
+  <div class="topbar">
+    <span class="topbar-title">練習完成</span>
+  </div>
+  <div class="container" style="text-align:center;padding-top:2rem;">
+    <div style="font-size:64px;margin-bottom:1rem;">🎉</div>
+    <div style="font-size:22px;font-weight:500;margin-bottom:8px;">太棒了！</div>
+    <div style="font-size:15px;color:var(--text-muted);margin-bottom:2rem;" id="doneMsg">練習完成</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.5rem;" id="doneStats"></div>
+
+    <button class="btn btn-primary" onclick="goTo('screenHome')">回到主選單</button>
+    <button class="btn" onclick="startPracticeFlow()">再練一次</button>
+  </div>
+</div>
+
+<script>
+// ===== CONFIG =====
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyBbT8h-8Yaa97rkiTYbwkUX_iQYLuC_USye5yG-94eVXoulTQu8BthI581FgPy2LXH/exec';
+
+// ===== STATE =====
+let currentStudent = null;
+let currentWords = [];
+let storyData = null;
+let currentTier = 0;
+let currentStep = 0;
+let selectedTheme = null;
+let practiceWordData = {};
+let evalDifficultyRating = null;
+let evalSelectedWords = [];
+let synth = window.speechSynthesis;
+let highlightTimer = null;
+let currentTranslateWord = '';
+let currentTranslateChinese = '';
+let currentTranslateDifficulty = '';
+
+// ===== SCREEN NAV =====
+function goTo(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ===== LOADING =====
+function showLoading(msg = '載入中...') {
+  document.getElementById('loadingMsg').textContent = msg;
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ===== GAS API =====
+async function gasGet(params) {
+  const url = GAS_URL + '?' + new URLSearchParams(params);
+  const res = await fetch(url);
+  return res.json();
+}
+async function gasPost(data) {
+  const res = await fetch(GAS_URL, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  });
+  return res.json();
+}
+
+// ===== SCREEN 1: STUDENTS =====
+async function loadStudents() {
+  try {
+    const data = await gasGet({ action: 'getStudents' });
+    const el = document.getElementById('studentListInner');
+    if (!data.length) {
+      el.innerHTML = '<div style="color:var(--text-muted);font-size:14px;padding:1rem 0;">還沒有學生，請新增一個！</div>';
+      return;
+    }
+    const levelMap = { beginner: '🌱 初學', intermediate: '🌿 進階', advanced: '🌳 流利' };
+    el.innerHTML = data.map(s => `
+      <div class="student-item" onclick="selectStudent(${JSON.stringify(s).replace(/"/g,"'")})">
+        <div class="avatar">${s.name.charAt(0)}</div>
+        <div class="student-info">
+          <div class="student-name">${s.name}</div>
+          <div class="student-level">${levelMap[s.difficulty] || s.difficulty}</div>
+        </div>
+        <span style="color:var(--text-muted);font-size:20px;">›</span>
+      </div>
+    `).join('');
+  } catch(e) {
+    document.getElementById('studentListInner').innerHTML = '<div style="color:var(--danger);font-size:14px;">載入失敗，請確認網路連線</div>';
+  }
+}
+
+function showAddStudent() {
+  document.getElementById('addStudentForm').style.display = 'block';
+}
+function hideAddStudent() {
+  document.getElementById('addStudentForm').style.display = 'none';
+}
+
+let selectedLevel = 'beginner';
+function selectLevel(btn) {
+  document.querySelectorAll('#addStudentForm .difficulty-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedLevel = btn.dataset.level;
+}
+
+async function addStudent() {
+  const name = document.getElementById('newStudentName').value.trim();
+  if (!name) { showToast('請輸入學生姓名'); return; }
+  showLoading('建立學生中...');
+  try {
+    await gasPost({ action: 'addStudent', name, difficulty: selectedLevel });
+    hideLoading();
+    hideAddStudent();
+    document.getElementById('newStudentName').value = '';
+    showToast('學生建立成功！');
+    loadStudents();
+  } catch(e) {
+    hideLoading();
+    showToast('建立失敗，請重試');
+  }
+}
+
+async function selectStudent(student) {
+  currentStudent = student;
+  showLoading('載入資料...');
+  try {
+    currentWords = await gasGet({ action: 'getWords', studentId: student.studentId });
+    hideLoading();
+    updateHomeScreen();
+    goTo('screenHome');
+  } catch(e) {
+    hideLoading();
+    showToast('載入失敗');
+  }
+}
+
+// ===== SCREEN 2: HOME =====
+function updateHomeScreen() {
+  const s = currentStudent;
+  const levelMap = { beginner: '🌱 初學', intermediate: '🌿 進階', advanced: '🌳 流利' };
+  document.getElementById('homeStudentName').textContent = s.name;
+  document.getElementById('homeAvatar').textContent = s.name.charAt(0);
+  document.getElementById('homeNameDisplay').textContent = s.name;
+  document.getElementById('homeLevelDisplay').textContent = levelMap[s.difficulty] || s.difficulty;
+
+  const mastered = s.masteredWords ? s.masteredWords.split(',').filter(Boolean) : [];
+  const struggling = s.strugglingWords ? s.strugglingWords.split(',').filter(Boolean) : [];
+  document.getElementById('statMastered').textContent = mastered.length;
+  document.getElementById('statStruggling').textContent = struggling.length;
+  document.getElementById('statTotal').textContent = currentWords.length;
+}
+
+// ===== SCREEN 3: WORDS =====
+function onWordInput(val) {
+  if (!val.trim()) document.getElementById('translatePreview').classList.remove('show');
+}
+
+async function translateWord() {
+  const word = document.getElementById('wordInput').value.trim().toLowerCase();
+  if (!word) { showToast('請輸入英文單字'); return; }
+  showLoading('翻譯中...');
+  try {
+    const result = await gasPost({ action: 'translateWord', word });
+    hideLoading();
+    currentTranslateWord = word;
+    currentTranslateChinese = result.chinese;
+    currentTranslateDifficulty = result.difficulty;
+    document.getElementById('translateChinese').textContent = result.chinese;
+    const diffMap = { easy: '簡單', medium: '中等', hard: '困難' };
+    document.getElementById('translateDifficulty').textContent = '難度：' + (diffMap[result.difficulty] || result.difficulty);
+    document.getElementById('translatePreview').classList.add('show');
+  } catch(e) {
+    hideLoading();
+    showToast('翻譯失敗，請重試');
+  }
+}
+
+function speakWord() {
+  speak(currentTranslateWord);
+}
+
+async function addWordConfirm() {
+  if (!currentTranslateWord) return;
+  const exists = currentWords.find(w => w.english === currentTranslateWord);
+  if (exists) { showToast('這個單字已經在單字庫了！'); return; }
+  showLoading('新增中...');
+  try {
+    await gasPost({
+      action: 'addWord',
+      studentId: currentStudent.studentId,
+      english: currentTranslateWord,
+      chinese: currentTranslateChinese,
+      difficulty: currentTranslateDifficulty
+    });
+    currentWords = await gasGet({ action: 'getWords', studentId: currentStudent.studentId });
+    hideLoading();
+    document.getElementById('wordInput').value = '';
+    document.getElementById('translatePreview').classList.remove('show');
+    currentTranslateWord = '';
+    showToast('✓ 已加入單字庫');
+    renderWordList();
+    updateHomeScreen();
+  } catch(e) {
+    hideLoading();
+    showToast('新增失敗，請重試');
+  }
+}
+
+function renderWordList() {
+  const el = document.getElementById('wordListInner');
+  document.getElementById('wordCount').textContent = `(${currentWords.length})`;
+  if (!currentWords.length) {
+    el.innerHTML = '<div style="color:var(--text-muted);font-size:14px;">還沒有單字，快來新增吧！</div>';
+    return;
+  }
+  const mastered = currentStudent.masteredWords ? currentStudent.masteredWords.split(',').filter(Boolean) : [];
+  const struggling = currentStudent.strugglingWords ? currentStudent.strugglingWords.split(',').filter(Boolean) : [];
+  el.innerHTML = currentWords.map(w => {
+    let cls = '';
+    if (mastered.includes(w.english)) cls = 'mastered';
+    else if (struggling.includes(w.english)) cls = 'struggling';
+    return `<span class="word-chip ${cls}" onclick="speak('${w.english}')">
+      ${w.english} ${w.chinese} 🔊
+    </span>`;
+  }).join('');
+}
+
+// ===== SCREEN 4: THEME =====
+function startPracticeFlow() {
+  if (currentWords.length < 5) {
+    showToast('單字庫至少需要 5 個單字才能練習！');
+    goTo('screenWords');
+    renderWordList();
+    return;
+  }
+  selectedTheme = null;
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('startStoryBtn').disabled = true;
+  document.getElementById('startStoryBtn').style.opacity = '0.5';
+  goTo('screenTheme');
+}
+
+function selectTheme(btn, theme) {
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedTheme = theme;
+  document.getElementById('startStoryBtn').disabled = false;
+  document.getElementById('startStoryBtn').style.opacity = '1';
+}
+
+async function generateStory() {
+  showLoading('AI 正在生成故事...');
+  try {
+    const result = await gasPost({
+      action: 'generateStory',
+      studentId: currentStudent.studentId,
+      theme: selectedTheme,
+      difficulty: currentStudent.difficulty
+    });
+    hideLoading();
+    if (result.error) { showToast('錯誤：' + result.error); return; }
+    storyData = result.story;
+    initPractice(result.selectedWords);
+    goTo('screenPractice');
+  } catch(e) {
+    hideLoading();
+    showToast('生成失敗，請重試');
+  }
+}
+
+// ===== SCREEN 5: PRACTICE =====
+function initPractice(selectedWords) {
+  currentTier = 0;
+  currentStep = 0;
+  practiceWordData = {};
+  selectedWords.forEach(w => {
+    practiceWordData[w.english] = { huntErrors: 0, phonicsUsed: false };
+  });
+  renderTier();
+}
+
+const tierNames = ['第 1 層：基礎', '第 2 層：句型變化', '第 3 層：問句挑戰'];
+const stepNames = ['步驟 1：指著聽', '步驟 2：單字獵人', '步驟 3：自己念'];
+const tierKeys = ['tier1', 'tier2', 'tier3'];
+
+function renderTier() {
+  const tier = storyData[tierKeys[currentTier]];
+  document.getElementById('tierBadge').textContent = tierNames[currentTier];
+  document.getElementById('practiceTitle').textContent = `第 ${currentTier + 1}/3 層`;
+  updateProgress();
+  renderStep(tier);
+}
+
+function updateProgress() {
+  const total = 9;
+  const done = currentTier * 3 + currentStep;
+  document.getElementById('practiceProgress').style.width = (done / total * 100) + '%';
+  [0,1,2].forEach(i => {
+    const dot = document.getElementById('dot' + i);
+    dot.className = 'step-dot' + (i < currentStep ? ' done' : i === currentStep ? ' active' : '');
+  });
+  document.getElementById('stepLabel').textContent = stepNames[currentStep];
+}
+
+function renderStep(tier) {
+  updateProgress();
+  const action = document.getElementById('actionArea');
+  document.getElementById('huntBox').style.display = 'none';
+  document.getElementById('phonicsBox').style.display = 'none';
+
+  if (currentStep === 0) renderStep1(tier, action);
+  else if (currentStep === 1) renderStep2(tier, action);
+  else renderStep3(tier, action);
+}
+
+// Step 1: Listen & Track
+function renderStep1(tier, action) {
+  renderStoryWords(tier.text, 'listen');
+  action.innerHTML = `<button class="btn btn-primary" onclick="playStory()">🔊 播放故事</button>`;
+}
+
+function renderStoryWords(text, mode) {
+  const words = text.split(/(\s+)/);
+  let html = '';
+  words.forEach((part, i) => {
+    if (/\S/.test(part)) {
+      const clean = part.replace(/[^a-zA-Z']/g, '');
+      html += `<span class="story-word" id="sw${i}" data-word="${clean}" onclick="onWordClick('${clean}','${mode}')">${part}</span>`;
+    } else {
+      html += part;
+    }
+  });
+  document.getElementById('storyDisplay').innerHTML = html;
+}
+
+function playStory() {
+  if (highlightTimer) clearInterval(highlightTimer);
+  const text = storyData[tierKeys[currentTier]].text;
+  const spans = document.querySelectorAll('.story-word');
+  spans.forEach(s => s.classList.remove('highlight'));
+
+  speak(text);
+
+  // Estimate highlight timing
+  const words = Array.from(spans);
+  const totalChars = text.replace(/\s+/g,'').length;
+  const wpm = 80;
+  const totalMs = (text.split(/\s+/).length / wpm) * 60000;
+  let elapsed = 0;
+
+  words.forEach((span, i) => {
+    const word = span.textContent.trim();
+    const delay = (word.length / totalChars) * totalMs;
+    setTimeout(() => {
+      words.forEach(s => s.classList.remove('highlight'));
+      span.classList.add('highlight');
+    }, elapsed);
+    elapsed += delay + 100;
+  });
+
+  setTimeout(() => {
+    spans.forEach(s => s.classList.remove('highlight'));
+    document.getElementById('actionArea').innerHTML = `
+      <button class="btn btn-primary" onclick="playStory()">🔊 再聽一次</button>
+      <button class="btn btn-success" onclick="nextStep()">下一步 →</button>
+    `;
+  }, elapsed + 500);
+}
+
+// Step 2: Word Hunt
+let huntIndex = 0;
+let huntQuestions = [];
+
+function renderStep2(tier, action) {
+  huntIndex = 0;
+  huntQuestions = tier.hunts;
+  renderStoryWords(tier.text, 'hunt');
+  showHunt();
+  action.innerHTML = '';
+}
+
+function showHunt() {
+  if (huntIndex >= huntQuestions.length) {
+    document.getElementById('huntBox').style.display = 'none';
+    document.getElementById('actionArea').innerHTML = `<button class="btn btn-success" onclick="nextStep()">下一步 →</button>`;
+    return;
+  }
+  const q = huntQuestions[huntIndex];
+  document.getElementById('huntBox').style.display = 'block';
+  document.getElementById('huntBox').textContent = '🎯 ' + q.question;
+  document.querySelectorAll('.story-word').forEach(s => s.classList.remove('hunt-target','hunt-correct','hunt-wrong'));
+  const target = q.answer.toLowerCase();
+  document.querySelectorAll('.story-word').forEach(s => {
+    if (s.dataset.word && s.dataset.word.toLowerCase() === target) s.classList.add('hunt-target');
+  });
+}
+
+function onWordClick(word, mode) {
+  if (mode === 'hunt') {
+    const q = huntQuestions[huntIndex];
+    if (!q) return;
+    const correct = q.answer.toLowerCase();
+    const clicked = word.toLowerCase();
+    if (clicked === correct) {
+      document.querySelectorAll('.story-word').forEach(s => {
+        if (s.dataset.word && s.dataset.word.toLowerCase() === correct) {
+          s.classList.remove('hunt-target');
+          s.classList.add('hunt-correct');
+        }
+      });
+      speak(word);
+      showToast('✓ 答對了！');
+      huntIndex++;
+      setTimeout(showHunt, 800);
+    } else {
+      if (practiceWordData[word]) practiceWordData[word].huntErrors++;
+      document.querySelectorAll('.story-word').forEach(s => {
+        if (s.dataset.word && s.dataset.word.toLowerCase() === clicked) {
+          s.classList.add('hunt-wrong');
+          setTimeout(() => s.classList.remove('hunt-wrong'), 600);
+        }
+      });
+    }
+  } else if (mode === 'phonics') {
+    triggerPhonics(word);
+  }
+}
+
+// Step 3: Read + Phonics
+let phonicsTimer = {};
+
+function renderStep3(tier, action) {
+  renderStoryWords(tier.text, 'phonics');
+  document.getElementById('phonicsBox').style.display = 'none';
+  action.innerHTML = `
+    <div style="color:var(--text-muted);font-size:14px;margin-bottom:10px;text-align:center;">
+      🎤 用手指著每個字，大聲念出來！<br>
+      <span style="font-size:12px;">不會的字可以點擊，聽聽看怎麼唸</span>
+    </div>
+    <button class="btn btn-success" onclick="nextStep()">我讀完了 ✓</button>
+  `;
+}
+
+function triggerPhonics(word) {
+  if (!word) return;
+  if (practiceWordData[word]) practiceWordData[word].phonicsUsed = true;
+  const phonics = buildPhonics(word);
+  const box = document.getElementById('phonicsBox');
+  box.style.display = 'block';
+  box.textContent = phonics;
+  speak(word);
+}
+
+function buildPhonics(word) {
+  // Simple phonics display
+  const clean = word.toLowerCase().replace(/[^a-z]/g,'');
+  if (clean.length <= 3) return `/${clean}/ → ${word}`;
+  const mid = Math.floor(clean.length / 2);
+  return `/${clean.slice(0,mid)}/ ... /${clean.slice(mid)}/ → ${word}`;
+}
+
+// Next Step / Tier
+function nextStep() {
+  currentStep++;
+  if (currentStep > 2) {
+    currentStep = 0;
+    currentTier++;
+    if (currentTier > 2) {
+      showEval();
+      return;
+    }
+  }
+  renderTier();
+}
+
+// ===== SCREEN 6: EVAL =====
+function showEval() {
+  evalDifficultyRating = null;
+  evalSelectedWords = [];
+  const words = Object.keys(practiceWordData);
+  document.getElementById('evalWordBtns').innerHTML = words.map(w =>
+    `<button class="eval-word-btn" data-word="${w}" onclick="toggleEvalWord(this)">${w}</button>`
+  ).join('');
+  document.querySelectorAll('#evalDifficultyGrid .difficulty-btn').forEach(b => b.classList.remove('selected'));
+  goTo('screenEval');
+}
+
+function selectEvalDifficulty(btn) {
+  document.querySelectorAll('#evalDifficultyGrid .difficulty-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  evalDifficultyRating = btn.dataset.rating;
+}
+
+function toggleEvalWord(btn) {
+  btn.classList.toggle('selected');
+}
+
+function clearEvalWords() {
+  document.querySelectorAll('.eval-word-btn').forEach(b => b.classList.remove('selected'));
+}
+
+async function submitEval() {
+  if (!evalDifficultyRating) { showToast('請選擇今天的難度感受'); return; }
+
+  const selfUnsure = Array.from(document.querySelectorAll('.eval-word-btn.selected')).map(b => b.dataset.word);
+
+  // Calculate mastered / struggling
+  const newMastered = [];
+  const newStruggling = [];
+
+  Object.entries(practiceWordData).forEach(([word, data]) => {
+    const isBad = data.huntErrors > 1 || data.phonicsUsed || selfUnsure.includes(word);
+    if (isBad) newStruggling.push(word);
+    else newMastered.push(word);
+  });
+
+  const existingMastered = currentStudent.masteredWords ? currentStudent.masteredWords.split(',').filter(Boolean) : [];
+  const existingStruggling = currentStudent.strugglingWords ? currentStudent.strugglingWords.split(',').filter(Boolean) : [];
+
+  // Merge: remove from struggling if now mastered, add new
+  const finalMastered = [...new Set([...existingMastered, ...newMastered])].filter(w => !newStruggling.includes(w));
+  const finalStruggling = [...new Set([...existingStruggling, ...newStruggling])].filter(w => !newMastered.includes(w));
+
+  showLoading('儲存練習結果...');
+  try {
+    await gasPost({
+      action: 'updateStudent',
+      studentId: currentStudent.studentId,
+      masteredWords: finalMastered.join(','),
+      strugglingWords: finalStruggling.join(',')
+    });
+    await gasPost({
+      action: 'saveSession',
+      studentId: currentStudent.studentId,
+      theme: selectedTheme,
+      words: Object.keys(practiceWordData).join(','),
+      difficulty: currentStudent.difficulty,
+      difficultyRating: evalDifficultyRating,
+      masteredResult: newMastered.join(','),
+      strugglingResult: newStruggling.join(',')
+    });
+
+    currentStudent.masteredWords = finalMastered.join(',');
+    currentStudent.strugglingWords = finalStruggling.join(',');
+
+    hideLoading();
+
+    document.getElementById('doneMsg').textContent = `完成了 ${Object.keys(practiceWordData).length} 個單字的練習！`;
+    document.getElementById('doneStats').innerHTML = `
+      <div style="background:var(--success-light);border-radius:var(--radius-sm);padding:14px;text-align:center;">
+        <div style="font-size:22px;font-weight:500;color:var(--success);">${newMastered.length}</div>
+        <div style="font-size:12px;color:var(--success);">本次掌握</div>
+      </div>
+      <div style="background:var(--warning-light);border-radius:var(--radius-sm);padding:14px;text-align:center;">
+        <div style="font-size:22px;font-weight:500;color:var(--warning);">${newStruggling.length}</div>
+        <div style="font-size:12px;color:var(--warning);">繼續加油</div>
+      </div>
+    `;
+    goTo('screenDone');
+  } catch(e) {
+    hideLoading();
+    showToast('儲存失敗，請重試');
+  }
+}
+
+// ===== UTILS =====
+function speak(text) {
+  if (!synth) return;
+  synth.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = 'en-US';
+  utt.rate = 0.85;
+  synth.speak(utt);
+}
+
+function confirmExitPractice() {
+  if (confirm('確定要離開練習嗎？進度將不會儲存。')) goTo('screenHome');
+}
+
+// ===== INIT =====
+window.addEventListener('load', () => {
+  loadStudents();
+  // When going to words screen, render word list
+  document.getElementById('screenWords').addEventListener('transitionend', renderWordList);
+});
+
+// Intercept screen transitions to words
+const origGoTo = goTo;
+window.goTo = function(id) {
+  origGoTo(id);
+  if (id === 'screenWords') renderWordList();
+  if (id === 'screenHome') updateHomeScreen();
+};
+</script>
+</body>
+</html>
