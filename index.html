@@ -8,28 +8,23 @@
 </head>
 <body>
 
-<!-- LOADING -->
 <div class="loading-overlay" id="loadingOverlay">
   <div class="spinner"></div>
   <div id="loadingMsg">載入中...</div>
 </div>
-
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <!-- ===== SCREEN: 選擇學生 ===== -->
 <div class="screen active" id="screenStudents">
-  <div class="topbar">
-    <span class="topbar-title">📖 VocabApp</span>
-  </div>
+  <div class="topbar"><span class="topbar-title">📖 VocabApp</span></div>
   <div class="container">
     <div class="card">
       <div class="section-label">選擇學生</div>
       <div id="studentListInner"><div class="muted-text">載入中...</div></div>
     </div>
     <button class="btn btn-primary" onclick="App.showAddStudentForm()">+ 新增學生</button>
-    <div class="card" id="addStudentForm" style="display:none;">
-      <div class="section-label" style="margin-bottom:12px;">新增學生</div>
+    <div class="card" id="addStudentForm" style="display:none">
+      <div class="section-label" style="margin-bottom:12px">新增學生</div>
       <input type="text" id="newStudentName" placeholder="學生姓名（例如：小明）">
       <div class="section-label">程度設定</div>
       <div class="difficulty-grid" id="addStudentLevelGrid">
@@ -51,7 +46,7 @@
     <div style="width:60px"></div>
   </div>
   <div class="container">
-    <div class="card flex-row" style="margin-bottom:1.25rem;">
+    <div class="card flex-row" style="margin-bottom:1.25rem">
       <div class="avatar" id="homeAvatar">?</div>
       <div>
         <div class="name-lg" id="homeNameDisplay">—</div>
@@ -61,22 +56,15 @@
     <div class="action-grid">
       <button class="btn btn-primary btn-lg" onclick="App.goTo('screenWords');App.renderWordList()">📚 單字庫管理</button>
       <button class="btn btn-success btn-lg" onclick="App.startPracticeFlow()">▶ 開始練習</button>
+      <button class="btn btn-quiz btn-lg" onclick="App.goTo('screenQuizMenu')">🧠 測驗</button>
     </div>
     <div class="card">
       <div class="section-label">學習狀態</div>
       <div class="stats-grid">
-        <div class="stat-box success">
-          <div class="stat-num" id="statMastered">0</div>
-          <div class="stat-label">已掌握</div>
-        </div>
-        <div class="stat-box warning">
-          <div class="stat-num" id="statStruggling">0</div>
-          <div class="stat-label">練習中</div>
-        </div>
-        <div class="stat-box primary">
-          <div class="stat-num" id="statTotal">0</div>
-          <div class="stat-label">單字總數</div>
-        </div>
+        <div class="stat-box success"><div class="stat-num" id="statMastered">0</div><div class="stat-label">已掌握</div></div>
+        <div class="stat-box warning"><div class="stat-num" id="statStruggling">0</div><div class="stat-label">練習中</div></div>
+        <div class="stat-box primary"><div class="stat-num" id="statTotal">0</div><div class="stat-label">單字總數</div></div>
+        <div class="stat-box graduated"><div class="stat-num" id="statGraduated">0</div><div class="stat-label">已畢業</div></div>
       </div>
     </div>
   </div>
@@ -91,7 +79,7 @@
   </div>
   <div class="container">
     <div class="card">
-      <div class="section-label" style="margin-bottom:10px;">新增單字</div>
+      <div class="section-label" style="margin-bottom:10px">新增單字</div>
       <div class="input-row">
         <input type="text" id="wordInput" placeholder="輸入英文單字" onkeydown="if(event.key==='Enter')App.translateWord()">
         <button class="btn btn-primary btn-sm" onclick="App.translateWord()">翻譯</button>
@@ -108,8 +96,13 @@
       </div>
     </div>
     <div class="card">
-      <div class="section-label" style="margin-bottom:10px;">
-        我的單字 <span id="wordCount" style="font-weight:400;color:var(--text-muted)"></span>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="section-label" style="margin:0">我的單字 <span id="wordCount" style="font-weight:400;color:var(--text-muted)"></span></div>
+        <div class="flex-row gap-sm">
+          <button class="btn btn-sm" id="filterAll" onclick="App.setWordFilter('all')" style="width:auto;margin:0">全部</button>
+          <button class="btn btn-sm" id="filterActive" onclick="App.setWordFilter('active')" style="width:auto;margin:0">練習中</button>
+          <button class="btn btn-sm" id="filterGraduated" onclick="App.setWordFilter('graduated')" style="width:auto;margin:0">已畢業</button>
+        </div>
       </div>
       <div id="wordListInner"><div class="muted-text">還沒有單字，快來新增吧！</div></div>
     </div>
@@ -125,7 +118,7 @@
   </div>
   <div class="container">
     <div class="card">
-      <div class="muted-text" style="margin-bottom:1rem;">今天想讀什麼主題的故事？</div>
+      <div class="muted-text" style="margin-bottom:1rem">今天想讀什麼主題的故事？</div>
       <div class="theme-grid">
         <button class="theme-btn" onclick="App.selectTheme(this,'animals')"><span class="theme-emoji">🦁</span>動物</button>
         <button class="theme-btn" onclick="App.selectTheme(this,'travel')"><span class="theme-emoji">✈️</span>旅行</button>
@@ -170,7 +163,7 @@
   <div class="topbar"><span class="topbar-title">今日練習回顧</span></div>
   <div class="container">
     <div class="card">
-      <div class="section-label" style="margin-bottom:12px;">這次故事你覺得...</div>
+      <div class="section-label" style="margin-bottom:12px">這次故事你覺得...</div>
       <div class="difficulty-grid">
         <button class="difficulty-btn" data-rating="easy" onclick="App.selectEvalDifficulty(this)">😴 太簡單</button>
         <button class="difficulty-btn" data-rating="good" onclick="App.selectEvalDifficulty(this)">😊 剛剛好</button>
@@ -179,12 +172,12 @@
       </div>
     </div>
     <div class="card">
-      <div class="section-label" style="margin-bottom:12px;">點出你不確定的字</div>
-      <div id="evalWordBtns" style="margin-bottom:12px;"></div>
+      <div class="section-label" style="margin-bottom:12px">點出你不確定的字</div>
+      <div id="evalWordBtns" style="margin-bottom:12px"></div>
       <button class="btn btn-sm" onclick="App.clearEvalWords()">全部都會！</button>
     </div>
     <div class="card" id="bonusWordsArea" style="display:none">
-      <div class="section-label" style="margin-bottom:12px;">本次新朋友 ✨ 要加入單字庫嗎？</div>
+      <div class="section-label" style="margin-bottom:12px">本次新朋友 ✨ 要加入單字庫嗎？</div>
       <div id="bonusWordList"></div>
     </div>
     <button class="btn btn-primary" onclick="App.submitEval()">完成練習</button>
@@ -195,12 +188,88 @@
 <div class="screen" id="screenDone">
   <div class="topbar"><span class="topbar-title">練習完成</span></div>
   <div class="container done-center">
-    <div style="font-size:64px;margin-bottom:1rem;">🎉</div>
-    <div class="name-lg" style="margin-bottom:8px;">太棒了！</div>
-    <div class="muted-text" style="margin-bottom:2rem;" id="doneMsg">練習完成</div>
-    <div class="stats-grid two-col" id="doneStats" style="margin-bottom:1.5rem;"></div>
+    <div style="font-size:64px;margin-bottom:1rem">🎉</div>
+    <div class="name-lg" style="margin-bottom:8px">太棒了！</div>
+    <div class="muted-text" style="margin-bottom:2rem" id="doneMsg">練習完成</div>
+    <div class="stats-grid two-col" id="doneStats" style="margin-bottom:1.5rem"></div>
     <button class="btn btn-primary" onclick="App.goTo('screenHome');App.updateHomeScreen()">回到主選單</button>
     <button class="btn" onclick="App.startPracticeFlow()">再練一次</button>
+  </div>
+</div>
+
+<!-- ===== SCREEN: 測驗主選單 ===== -->
+<div class="screen" id="screenQuizMenu">
+  <div class="topbar">
+    <button class="topbar-back" onclick="App.goTo('screenHome')">← 返回</button>
+    <span class="topbar-title">測驗</span>
+    <div style="width:60px"></div>
+  </div>
+  <div class="container">
+    <div class="card quiz-menu-card" onclick="App.startPhonicsQuiz()">
+      <div class="quiz-menu-icon">🔤</div>
+      <div class="quiz-menu-title">拼音測驗</div>
+      <div class="quiz-menu-desc">聽發音，填入缺少的字母</div>
+    </div>
+    <div class="card quiz-menu-card" onclick="App.startClozeQuiz()">
+      <div class="quiz-menu-icon">📝</div>
+      <div class="quiz-menu-title">克漏字測驗</div>
+      <div class="quiz-menu-desc">看句子，選出正確的單字</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: 拼音測驗 ===== -->
+<div class="screen" id="screenPhonics">
+  <div class="topbar">
+    <button class="topbar-back" onclick="App.confirmExitQuiz()">✕ 離開</button>
+    <span class="topbar-title">拼音測驗</span>
+    <span id="phonicsProgress" style="font-size:14px;color:var(--text-muted)">1/5</span>
+  </div>
+  <div class="container">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="phonicsProgressBar" style="width:0%"></div></div>
+    <div class="card" style="text-align:center">
+      <div class="muted-text" style="margin-bottom:1rem">聽發音，點選缺少的字母填入空格</div>
+      <div class="quiz-word-display" id="phonicsDisplay">r _ _ n</div>
+      <div class="quiz-chinese" id="phoneticsChinese">雨・名詞</div>
+      <div style="margin:1.5rem 0">
+        <button class="btn btn-sm" style="width:auto" onclick="App.replayPhonics()">🔊 再聽一次</button>
+      </div>
+      <div class="phonics-chips" id="phonicsChips"></div>
+      <div class="phonics-feedback" id="phonicsFeedback"></div>
+    </div>
+    <div id="phonicsAction"></div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: 克漏字測驗 ===== -->
+<div class="screen" id="screenCloze">
+  <div class="topbar">
+    <button class="topbar-back" onclick="App.confirmExitQuiz()">✕ 離開</button>
+    <span class="topbar-title">克漏字測驗</span>
+    <span id="clozeProgress" style="font-size:14px;color:var(--text-muted)">1/5</span>
+  </div>
+  <div class="container">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="clozeProgressBar" style="width:0%"></div></div>
+    <div class="card">
+      <div class="muted-text" style="margin-bottom:1rem">選出正確的單字填入空格</div>
+      <div class="cloze-sentence" id="clozeSentence"></div>
+      <div class="cloze-options" id="clozeOptions"></div>
+      <div class="phonics-feedback" id="clozeFeedback"></div>
+    </div>
+    <div id="clozeAction"></div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: 測驗結果 ===== -->
+<div class="screen" id="screenQuizDone">
+  <div class="topbar"><span class="topbar-title">測驗完成</span></div>
+  <div class="container done-center">
+    <div style="font-size:64px;margin-bottom:1rem" id="quizDoneEmoji">🎉</div>
+    <div class="name-lg" style="margin-bottom:8px" id="quizDoneTitle">太棒了！</div>
+    <div class="muted-text" style="margin-bottom:2rem" id="quizDoneMsg"></div>
+    <div class="stats-grid two-col" id="quizDoneStats" style="margin-bottom:1.5rem"></div>
+    <button class="btn btn-primary" onclick="App.goTo('screenHome');App.updateHomeScreen()">回到主選單</button>
+    <button class="btn" onclick="App.goTo('screenQuizMenu')">再測一次</button>
   </div>
 </div>
 
