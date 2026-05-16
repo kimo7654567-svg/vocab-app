@@ -157,9 +157,12 @@ const App = (() => {
   let currentTranslateWord = '';
   function showTranslateResult(word, result) {
     currentTranslateWord = word;
-    document.getElementById('translateChinese').textContent = result.chinese;
-    const diffMap = {easy:'簡單',medium:'中等',hard:'困難'};
-    document.getElementById('translateDifficulty').textContent = '難度：'+(diffMap[result.difficulty]||result.difficulty);
+    document.getElementById('translateChinese').textContent = result.chinese || '—';
+    const posMap = { noun:'名詞', verb:'動詞', adjective:'形容詞', adverb:'副詞', other:'其他' };
+    const diffMap = { easy:'簡單 🌱', medium:'中等 🌿', hard:'困難 🌳' };
+    const pos = posMap[result.partOfSpeech] || '';
+    const diff = diffMap[result.difficulty] || '';
+    document.getElementById('translateDifficulty').textContent = [pos, diff].filter(Boolean).join('　');
     document.getElementById('translatePreview').classList.add('show');
   }
 
