@@ -7,7 +7,7 @@ const App = (() => {
   let currentWords     = [];
   let storyData        = null;
   let selectedWords    = [];
-  let bonusWords       = [];
+  let newVocab         = [];   // new words introduced in this story session
   let currentTier      = 0;
   let currentStep      = 0;
   let selectedTheme    = null;
@@ -191,8 +191,7 @@ const App = (() => {
 
   // ── THEME / STORY ──────────────────────────────────────
   function startPracticeFlow() {
-    const active=currentWords.filter(w=>(w.status||'active')==='active');
-    if(active.length<5){showToast('需要至少5個練習中的單字！');goTo('screenWords');renderWordList();return;}
+    if(currentWords.length<5){showToast('需要至少5個單字才能練習！');goTo('screenWords');renderWordList();return;}
     selectedTheme=null;
     document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('selected'));
     const btn=document.getElementById('startStoryBtn'); btn.disabled=true; btn.style.opacity='0.45';
@@ -208,7 +207,7 @@ const App = (() => {
     try {
       const r=await gasPost({action:'generateStory',studentId:currentStudent.studentId,theme:selectedTheme,difficulty:currentStudent.difficulty});
       hideLoading(); if(r.error){showToast('錯誤：'+r.error);return;}
-      storyData=r.story; selectedWords=r.selectedWords; bonusWords=r.bonusWords||[];
+      storyData=r.story; selectedWords=r.selectedWords; newVocab=r.newVocab||[];
       initPractice(); goTo('screenPractice');
     } catch(e){hideLoading();showToast('生成失敗，請重試');}
   }
@@ -290,14 +289,16 @@ const App = (() => {
   }
   function renderWordCards() {
     const old=document.getElementById('wordCardsArea'); if(old)old.remove();
-    const div=document.createElement('div'); div.id='wordCardsArea'; div.className='word-cards-area';
-    div.innerHTML=selectedWords.map(w=>
-      '<div class="word-card" onclick="App.speak(\''+w.english+'\')">'+
-        '<div class="word-card-en">'+w.english+'</div>'+
-        '<div class="word-card-zh">'+w.chinese+'・'+(POS_MAP[w.partOfSpeech]||'—')+'</div>'+
-        '<div class="word-card-icon">🔊</div>'+
-      '</div>'
-    ).join('');
+    const div=document.createElement('div'); div.id='wordCardsArea'; div.className='word-cards-area-wrap';
+    const mk=(w,n)=>
+      '<div class="word-card'+(n?' word-card-new':'')+'" onclick="App.speak(\''+ w.english +'\')">'+
+      (n?'<div class="word-card-new-badge">新</div>':'')+
+      '<div class="word-card-en">'+w.english+'</div>'+
+      '<div class="word-card-zh">'+(w.chinese||'')+(w.partOfSpeech?'・'+(POS_MAP[w.partOfSpeech]||''): '')+'</div>'+
+      '<div class="word-card-icon">🔊</div></div>';
+    const rRow='<div class="vocab-section-label">📚 複習單字</div><div class="word-cards-area">'+selectedWords.map(w=>mk(w,false)).join('')+'</div>';
+    const nRow=newVocab.length?'<div class="vocab-section-label">📖 本課生字</div><div class="word-cards-area">'+newVocab.map(w=>mk(w,true)).join('')+'</div>':''; 
+    div.innerHTML=rRow+nRow;
     document.getElementById('storyCard').parentNode.insertBefore(div,document.getElementById('storyCard'));
   }
   function renderTranslation(ct) {
@@ -397,11 +398,11 @@ const App = (() => {
     ).join('');
     const ba=document.getElementById('bonusWordsArea');
     if(ba){
-      if(bonusWords.length){
+      if(newVocab.length){
         ba.style.display='block';
-        document.getElementById('bonusWordList').innerHTML=bonusWords.map((w,i)=>
+        document.getElementById('bonusWordList').innerHTML=newVocab.map((w,i)=>
           '<div class="bonus-word-row"><label class="bonus-check">'+
-            '<input type="checkbox" id="bonus'+i+'">'+
+            '<input type="checkbox" id="bonus'+i+'" checked>'+
             '<span class="bonus-en">'+w.english+'</span>'+
             '<span class="bonus-zh">'+w.chinese+'・'+(POS_MAP[w.partOfSpeech]||'—')+'</span>'+
             '<button class="btn btn-sm" onclick="App.speak(\''+w.english+'\')" style="width:auto;margin:0">🔊</button>'+
@@ -428,7 +429,7 @@ const App = (() => {
     const exS=currentStudent.strugglingWords?currentStudent.strugglingWords.split(',').filter(Boolean):[];
     const fM=[...new Set([...exM,...newM])].filter(w=>!newS.includes(w));
     const fS=[...new Set([...exS,...newS])].filter(w=>!newM.includes(w));
-    const cb=bonusWords.filter((w,i)=>{const e=document.getElementById('bonus'+i);return e&&e.checked;});
+    const cb=newVocab.filter((w,i)=>{const e=document.getElementById('bonus'+i);return e&&e.checked;});
     showLoading('儲存練習結果...');
     try {
       await gasPost({action:'updateStudent',studentId:currentStudent.studentId,masteredWords:fM.join(','),strugglingWords:fS.join(',')});
@@ -500,7 +501,6 @@ const App = (() => {
 
   // ── CLOZE QUIZ ─────────────────────────────────────────
   async function startClozeQuiz() {
-    const active=currentWords.filter(w=>(w.status||'active')==='active');
     if(active.length<4){showToast('需要至少4個練習中的單字才能測驗！');return;}
     showLoading('AI 正在出題...');
     try {
